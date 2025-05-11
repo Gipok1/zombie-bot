@@ -61,26 +61,33 @@ async function updateServerStatusMessage() {
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
-                // USUNIĘTO LINIĘ ODPOWIEDZIALNĄ ZA ESCAPE'OWANIE PODKREŚLEŃ
                 // Nick gracza będzie teraz używany bezpośrednio.
                 // Jeśli nick zawiera podkreślenia (np. Player_Name), Discord może wyświetlić go jako kursywa.
                 const playerName = p.name;
 
                 let playerStats = [];
 
-                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:'
+                // Zabójstwa (score)
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
 
-                // Czas na serwerze (konwersja z sekund na minuty)
+                // Czas na serwerze (konwersja z sekund na minity)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
                     const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
 
                     const hours = Math.floor(totalMinutes / 60); // Ile pełnych godzin
                     const remainingMinutes = totalMinutes % 60;  // Ile minut pozostaje po odjęciu godzin
-                    playerStats.push(`Czas: ${hours}h ${remainingMinutes}m`);
+                    
+                    let timeString;
+                    // NOWA LOGIKA: Jeśli godziny to 0, wyświetl tylko minuty
+                    if (hours === 0) {
+                        timeString = `${remainingMinutes}m`;
+                    } else {
+                        timeString = `${hours}h ${remainingMinutes}m`;
+                    }
+                    playerStats.push(`Czas: ${timeString}`); // Używamy przygotowanego stringu czasu
                 }
 
                 // Łączymy statystyki
@@ -132,11 +139,9 @@ client.once('ready', async () => {
     console.log(`Bot będzie automatycznie aktualizować wiadomość statusu co ${UPDATE_INTERVAL_MINUTES} minuty.`);
 
     // WALIDACJA ZMIENNYCH ŚRODOWISKOWYCH:
-    // Poniższy kod sprawdza, czy zmienne środowiskowe są ustawione.
-    // To jest krytyczne dla działania bota!
     if (!TOKEN || !SERVER_IP || isNaN(SERVER_PORT) || !STATUS_CHANNEL_ID || isNaN(UPDATE_INTERVAL_MINUTES)) {
         console.error('BŁĄD: Brakuje lub są nieprawidłowe wymagane zmienne środowiskowe (.env). Upewnij się, że plik .env zawiera DISCORD_TOKEN, CS16_SERVER_IP, CS16_SERVER_PORT, STATUS_CHANNEL_ID i UPDATE_INTERVAL_MINUTES.');
-        process.exit(1); // Zakończ działanie bota
+        process.exit(1);
     }
 
     // --- ROZWIĄZANIE PROBLEMU Z HOSTINGIEM ---
@@ -159,30 +164,28 @@ client.once('ready', async () => {
         return;
     }
 
-    // ***** NOWA LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
+    // ***** LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
     if (PREVIOUS_STATUS_MESSAGE_ID) {
         try {
             const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
-            statusMessage = fetchedMessage; // Ustaw statusMessage na pobraną wiadomość
+            statusMessage = fetchedMessage;
             console.log(`Znaleziono poprzednią wiadomość statusu o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Będę ją aktualizować.`);
         } catch (error) {
-            // Jeśli nie udało się pobrać wiadomości (np. została usunięta lub ID jest błędne)
             console.warn(`⚠️ Nie udało się znaleźć lub odczytać poprzedniej wiadomości o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Możliwe, że została usunięta lub ID jest błędne. Wysyłam nową wiadomość.`);
             statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
             console.log(`Wysłano nową wiadomość statusu o ID: ${statusMessage.id}. PROSZĘ ZAKTUALIZOWAĆ LUB DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
         }
     } else {
-        // Jeśli nie ma ID poprzedniej wiadomości w zmiennych środowiskowych, wysyłamy nową
         statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
-    // ***** KONIEC NOWEJ LOGIKI *****
+    // ***** KONIEC LOGIKI *****
 
 
     // Natychmiastowa pierwsza aktualizacja
     await updateServerStatusMessage();
 
-    // Ustaw interwał dla regularnych aktualizacji (3 minuty = 180 sekund)
+    // Ustaw interwał dla regularnych aktualizacji
     setInterval(updateServerStatusMessage, UPDATE_INTERVAL_MINUTES * 60 * 1000);
 });
 
