@@ -64,16 +64,18 @@ async function updateServerStatusMessage() {
 
                 // Zabójstwa (score)
                 if (p.score !== undefined) {
-                    playerStats.push(`Fragi: ${p.score}`);
+                    playerStats.push(`K:${p.score}`);
                 }
 
                 // Czas na serwerze (konwersja z sekund na minuty)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
-                    // Zaokrąglamy do najbliższej pełnej minuty
-                    const totalMinutes = Math.round(totalSeconds / 60);
+                    const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
 
-                    playerStats.push(`Czas: ${totalMinutes}min`);
+                    // NOWA LOGIKA DLA FORMATU Hh MMm
+                    const hours = Math.floor(totalMinutes / 60); // Ile pełnych godzin
+                    const remainingMinutes = totalMinutes % 60;  // Ile minut pozostaje po odjęciu godzin
+                    playerStats.push(`Czas: ${hours}h ${remainingMinutes}m`); // Zmieniona linia
                 }
 
                 // Łączymy statystyki
