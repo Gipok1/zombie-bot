@@ -103,7 +103,7 @@ async function updateServerStatusMessage() {
             }
 
             // Konstruujemy całą sekcję z listą graczy w bloku kodu
-            playerListSection = `\n**Gracze online:**\n\`\`\`\n${playerListContent}\`\`\``;
+            playerListSection = `\n**Gracze Online:**\n\`\`\`\n${playerListContent}\`\`\``;
 
         } else {
             // Jeśli brak graczy, również umieszczamy to w bloku kodu
@@ -128,7 +128,7 @@ async function updateServerStatusMessage() {
             `>>> **Serwer CS 1.6 Status**\n`
             + `🔴 **Status:** Offline lub brak odpowiedzi\n`
             + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\`\n`
-            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_` // Zmieniono format czasu również tutaj!
+            + `**_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_***` // Zmieniono format czasu również tutaj!
         );
     }
 }
