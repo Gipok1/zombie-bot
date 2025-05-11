@@ -61,7 +61,7 @@ async function updateServerStatusMessage() {
 
                 // Zabójstwa (score)
                 if (p.score !== undefined) {
-                    playerStats.push(`K:${p.score}`);
+                    playerStats.push(`Fragi:${p.score}`);
                 }
 
                 // Czas na serwerze (konwersja z sekund na minuty)
@@ -70,7 +70,7 @@ async function updateServerStatusMessage() {
                     // Zaokrąglamy do najbliższej pełnej minuty
                     const totalMinutes = Math.round(totalSeconds / 60);
 
-                    playerStats.push(`Czas: ${totalMinutes}m`);
+                    playerStats.push(`Czas: ${totalMinutes}min.`);
                 }
 
                 // Łączymy statystyki
