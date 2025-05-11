@@ -46,7 +46,7 @@ async function updateServerStatusMessage() {
 
         // Tworzymy nowy obiekt EmbedBuilder
         const embed = new EmbedBuilder()
-            .setTitle('Status Serwera Counter-Strike 1.6')
+            .setTitle('ZOMBIE+EXP 100 LVL by MCk199')
             .setColor(0x0099FF) // Kolor niebieski dla statusu online
             .setDescription(
                 `⭐ **Nazwa:** ${serverInfo.name}\n` +
@@ -105,18 +105,26 @@ async function updateServerStatusMessage() {
 
             // Dodajemy pole dla listy graczy, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze online:**', value: playerListContent, inline: false } // <<< ZMIANA: Nagłówek pola pogrubiony
+                { name: '**Gracze online:**', value: playerListContent, inline: false }
             );
 
         } else {
             // Jeśli brak graczy, również dodajemy pole, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze online:**', value: 'Brak graczy online.', inline: false } // <<< ZMIANA: Nagłówek pola pogrubiony
+                { name: '**Gracze online:**', value: 'Brak graczy online.', inline: false }
             );
         }
 
-        // Dodajemy stopkę z ostatnią aktualizacją (bez zmian w formatowaniu - powinna być już normalna)
-        embed.setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+        // <<< ZMIANA TUTAJ: Ostatnia aktualizacja jako nowe pole, pogrubiona bez stpoki - 23:09 >>> 
+        embed.addFields(
+            {
+                name: '\u200b', // Pusta nazwa pola dla lepszego wyglądu
+                value: `**Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}**`,
+                inline: false
+            }
+        );
+        // <<< KONIEC ZMIANY >>>
+
 
         // Wysyłamy / edytujemy wiadomość, używając obiektu embed
         await statusMessage.edit({ embeds: [embed], content: '' });
@@ -132,7 +140,15 @@ async function updateServerStatusMessage() {
                 `🔴 **Status:** Offline lub brak odpowiedzi\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             )
-            .setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+            // <<< ZMIANA TUTAJ DLA BŁĘDU: Ostatnia aktualizacja jako nowe pole, pogrubiona >>>
+            .addFields(
+                {
+                    name: '\u200b', // Pusta nazwa pola
+                    value: `**Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}**`,
+                    inline: false
+                }
+            );
+            // <<< KONIEC ZMIANY DLA BŁĘDU >>>
 
         await statusMessage.edit({ embeds: [errorEmbed], content: '' });
     }
@@ -169,7 +185,6 @@ client.once('ready', async () => {
         return;
     }
 
-    // ***** LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
     if (PREVIOUS_STATUS_MESSAGE_ID) {
         try {
             const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
@@ -190,7 +205,6 @@ client.once('ready', async () => {
         });
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
-    // ***** KONIEC LOGIKI *****
 
 
     // Natychmiastowa pierwsza aktualizacja
