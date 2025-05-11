@@ -47,15 +47,15 @@ async function updateServerStatusMessage() {
         // Tworzymy nowy obiekt EmbedBuilder
         const embed = new EmbedBuilder()
             .setTitle('Status Serwera Counter-Strike 1.6') // Tytuł embeda
-            // Usunięto linię .setColor(0x0099FF) - Teraz nie będzie niebieskiego paska dla statusu online
+            .setColor(0x0099FF)
             .setDescription( // Opis embeda zawierający podstawowe informacje o serwerze
                 `⭐ **Nazwa:** ${serverInfo.name}\n` +
                 `🗺️ **Mapa:** ${serverInfo.map}\n` +
                 `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n` +
-                `🔗 **Adres:** \`<span class="math-inline">\{SERVER\_IP\}\:</span>{SERVER_PORT}\``
+                `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             );
 
-        // >>> PRZYWRÓCONE TWORZENIE LISTY GRACZY I DODAWANIE JAKO POLA DO EMBEDA <<<
+        // >>> PRZYWRÓCONA LOGIKA TWORZENIA LISTY GRACZY I DODAWANIA JEJ JAKO POLA DO EMBEDA BEZ BLOKU KODU <<<
         if (serverInfo.players && serverInfo.players.length > 0) {
             const sortedPlayers = serverInfo.players.sort((a, b) => {
                 if (a.score !== undefined && b.score !== undefined) {
@@ -102,25 +102,25 @@ async function updateServerStatusMessage() {
                 playerListContent += `\n(+${serverInfo.players.length - maxPlayersToShow} więcej...)\n`;
             }
 
-            // Dodajemy pole do embeda dla listy graczy, nadal w bloku kodu
+            // Dodajemy pole do embeda dla listy graczy, TERAZ BEZ BLOKU KODU
             embed.addFields(
-                { name: '***Gracze Online:***', value: `\`\`\`\n${playerListContent}\`\`\``, inline: false }
+                { name: '***Gracze Online:***', value: playerListContent, inline: false }
             );
 
         } else {
-            // Jeśli brak graczy, również dodajemy pole do embeda w bloku kodu
+            // Jeśli brak graczy, również dodajemy pole do embeda TERAZ BEZ BLOKU KODU
             embed.addFields(
-                { name: '***Gracze Online:***', value: '```\nBrak graczy online.\n```', inline: false }
+                { name: '***Gracze Online:***', value: 'Brak graczy online.', inline: false }
             );
         }
-        // >>> KONIEC PRZYWRÓCONEJ LOGIKI <<<
+        // >>> KONIEC PRZYWRÓCONEJ LOGIKI BEZ BLOKU KODU <<<
 
         // Dodajemy stopkę z ostatnią aktualizacją
         embed.setFooter({ text: `Ostatnia Aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
         // Wysyłamy / edytujemy wiadomość, używając obiektu embed
         await statusMessage.edit({ embeds: [embed], content: '' });
-        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie (Embed z blokiem kodu dla graczy).');
+        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie (Embed, gracze bez bloku kodu).');
 
     } catch (error) {
         console.error('❌ Wystąpił błąd podczas pobierania informacji o serwerze CS 1.6:', error.message);
@@ -130,7 +130,7 @@ async function updateServerStatusMessage() {
             .setColor(0xFF0000) // Kolor czerwony dla statusu offline (POZOSTAWIENIE)
             .setDescription(
                 `🔴 **Status:** Offline lub brak odpowiedzi\n` +
-                `🔗 **Adres:** \`<span class="math-inline">\{SERVER\_IP\}\:</span>{SERVER_PORT}\``
+                `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             )
             .setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
