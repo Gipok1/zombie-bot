@@ -60,17 +60,16 @@ async function updateServerStatusMessage() {
             playersToShow.forEach(p => {
                 // USUNIĘTO LINIĘ ODPOWIEDZIALNĄ ZA ESCAPE'OWANIE PODKREŚLEŃ
                 // Nick gracza będzie teraz używany bezpośrednio.
-                // Jeśli nick zawiera podkreślenia (np. Player_Name), Discord może wyświetlić go jako kursywa.
                 const playerName = p.name;
 
                 let playerStats = [];
 
-                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:'
+                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:' - 22:04
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
 
-                // Czas na serwerze (konwersja z sekund na minuty)
+                // Czas na serwerze (konwersja z minut na godziny - 22:03)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
                     const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
