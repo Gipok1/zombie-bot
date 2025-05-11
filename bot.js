@@ -75,21 +75,42 @@ async function updateServerStatusMessage() {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
 
+                // <<< ZMIENIONA LOGIKA DLA CZASU GRACZA >>>
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
-                    const totalMinutes = Math.round(totalSeconds / 60);
-                    
-                    const hours = Math.floor(totalMinutes / 60);
-                    const remainingMinutes = totalMinutes % 60;
-                    
+
                     let timeString;
-                    if (hours === 0) {
-                        timeString = `${remainingMinutes}m`;
+
+                    if (totalSeconds < 60) {
+                        // Jeśli poniżej minuty, wyświetl tylko sekundy
+                        timeString = `${totalSeconds}s`;
                     } else {
-                        timeString = `${hours}h ${remainingMinutes}m`;
+                        // Oblicz godziny, minuty i sekundy
+                        const hours = Math.floor(totalSeconds / 3600);
+                        const minutes = Math.floor((totalSeconds % 3600) / 60);
+                        const seconds = totalSeconds % 60;
+
+                        let parts = [];
+
+                        if (hours > 0) {
+                            parts.push(`${hours}h`);
+                        }
+                        
+                        // Wyświetl minuty, jeśli są godziny lub jeśli minuty są > 0
+                        if (minutes > 0 || hours > 0) {
+                            parts.push(`${minutes}m`);
+                        }
+
+                        // Wyświetl sekundy, jeśli są > 0, LUB jeśli są godziny/minuty i sekundy = 0
+                        if (seconds > 0 || (hours > 0 || minutes > 0)) {
+                            parts.push(`${seconds}s`);
+                        }
+                        
+                        timeString = parts.join(' ');
                     }
                     playerStats.push(`Czas: ${timeString}`);
                 }
+                // <<< KONIEC ZMIANY >>>
 
                 // Formatowanie: Nick bez pogrubienia, statystyki w nawiasie pogrubione
                 if (playerStats.length > 0) {
@@ -115,15 +136,14 @@ async function updateServerStatusMessage() {
             );
         }
 
-        // <<< ZMIANA TUTAJ: Ostatnia aktualizacja jako nowe pole, pogrubiona bez stpoki - 23:09 >>> 
+        // Ostatnia aktualizacja jako nowe pole, pogrubiona
         embed.addFields(
             {
                 name: '\u200b', // Pusta nazwa pola dla lepszego wyglądu
-                value: `**Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}**`,
+                value: `**Ostatnia Aktualizacja:** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}`,
                 inline: false
             }
         );
-        // <<< KONIEC ZMIANY >>>
 
 
         // Wysyłamy / edytujemy wiadomość, używając obiektu embed
@@ -140,15 +160,14 @@ async function updateServerStatusMessage() {
                 `🔴 **Status:** Offline lub brak odpowiedzi\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             )
-            // <<< ZMIANA TUTAJ DLA BŁĘDU: Ostatnia aktualizacja jako nowe pole, pogrubiona >>>
+            // Ostatnia aktualizacja jako nowe pole, pogrubiona
             .addFields(
                 {
                     name: '\u200b', // Pusta nazwa pola
-                    value: `**Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}**`,
+                    value: `**Ostatnia Aktualizacja:** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}`,
                     inline: false
                 }
             );
-            // <<< KONIEC ZMIANY DLA BŁĘDU >>>
 
         await statusMessage.edit({ embeds: [errorEmbed], content: '' });
     }
@@ -185,6 +204,7 @@ client.once('ready', async () => {
         return;
     }
 
+    // ***** LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
     if (PREVIOUS_STATUS_MESSAGE_ID) {
         try {
             const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
@@ -205,6 +225,7 @@ client.once('ready', async () => {
         });
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
+    // ***** KONIEC LOGIKI *****
 
 
     // Natychmiastowa pierwsza aktualizacja
