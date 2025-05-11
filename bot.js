@@ -1,3 +1,6 @@
+// Na początku pliku, po innych importach, dodaj moduł 'http':
+const http = require('http');
+
 const { Client, GatewayIntentBits, TextChannel } = require('discord.js');
 const Gamedig = require('gamedig');
 require('dotenv').config(); // Wczytaj zmienne środowiskowe z pliku .env
@@ -61,7 +64,7 @@ async function updateServerStatusMessage() {
 
                 // Zabójstwa (score)
                 if (p.score !== undefined) {
-                    playerStats.push(`Fragi:${p.score}`);
+                    playerStats.push(`K:${p.score}`);
                 }
 
                 // Czas na serwerze (konwersja z sekund na minuty)
@@ -70,7 +73,7 @@ async function updateServerStatusMessage() {
                     // Zaokrąglamy do najbliższej pełnej minuty
                     const totalMinutes = Math.round(totalSeconds / 60);
 
-                    playerStats.push(`Czas: ${totalMinutes}min.`);
+                    playerStats.push(`Czas: ${totalMinutes}m`);
                 }
 
                 // Łączymy statystyki
@@ -121,11 +124,33 @@ client.once('ready', async () => {
     console.log(`✅ Bot zalogowany jako ${client.user.tag}!`);
     console.log(`Bot będzie automatycznie aktualizować wiadomość statusu co ${UPDATE_INTERVAL_MINUTES} minuty.`);
 
-    // Walidacja zmiennych środowiskowych
+    // WALIDACJA ZMIENNYCH ŚRODOWISKOWYCH:
+    // Poniższy kod sprawdza, czy zmienne środowiskowe są ustawione.
+    // To jest krytyczne dla działania bota!
     if (!TOKEN || !SERVER_IP || isNaN(SERVER_PORT) || !STATUS_CHANNEL_ID || isNaN(UPDATE_INTERVAL_MINUTES)) {
         console.error('BŁĄD: Brakuje lub są nieprawidłowe wymagane zmienne środowiskowe (.env). Upewnij się, że plik .env zawiera DISCORD_TOKEN, CS16_SERVER_IP, CS16_SERVER_PORT, STATUS_CHANNEL_ID i UPDATE_INTERVAL_MINUTES.');
         process.exit(1); // Zakończ działanie bota
     }
+
+    // --- ROZWIĄZANIE PROBLEMU Z HOSTINGIEM (DODAJ TEN KOD) ---
+    // Port dla kontroli stanu przez platformę hostingową.
+    // Platformy hostingowe często udostępniają go w zmiennej środowiskowej PORT.
+    const HOSTING_PORT = process.env.PORT || 3000; // Użyj portu zdefiniowanego przez hosting, lub domyślnie 3000
+
+    // Tworzymy prosty serwer HTTP, który nasłuchuje na tym porcie.
+    // Służy to tylko do spełnienia wymagań platformy hostingowej,
+    // aby myślała, że aplikacja działa.
+    const hostingWebServer = http.createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Bot Discord dziala i jest zdrowy.\n');
+    });
+
+    hostingWebServer.listen(HOSTING_PORT, () => {
+        console.log(`Prosty serwer webowy (do kontroli hostingu) nasłuchuje na porcie ${HOSTING_PORT}`);
+        console.log('Ten serwer służy wyłącznie do sprawdzania stanu przez platformę hostingową. Funkcjonalność bota Discord NIE jest od niego zależna.');
+    });
+    // --- KONIEC KODU ROZWIĄZUJĄCEGO PROBLEM Z HOSTINGIEM ---
+
 
     const channel = await client.channels.fetch(STATUS_CHANNEL_ID);
 
