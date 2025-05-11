@@ -12,6 +12,9 @@ const SERVER_PORT = parseInt(process.env.CS16_SERVER_PORT);
 const STATUS_CHANNEL_ID = process.env.STATUS_CHANNEL_ID; // ID kanału, gdzie ma być wyświetlany status
 const UPDATE_INTERVAL_MINUTES = parseInt(process.env.UPDATE_INTERVAL_MINUTES || '3'); // Częstotliwość aktualizacji w minutach, domyślnie 3
 
+// NOWA ZMIENNA ŚRODOWISKOWA: ID poprzedniej wiadomości statusu
+const PREVIOUS_STATUS_MESSAGE_ID = process.env.PREVIOUS_STATUS_MESSAGE_ID;
+
 // Zmienna globalna do przechowywania obiektu wiadomości statusu
 let statusMessage = null;
 
@@ -60,16 +63,17 @@ async function updateServerStatusMessage() {
             playersToShow.forEach(p => {
                 // USUNIĘTO LINIĘ ODPOWIEDZIALNĄ ZA ESCAPE'OWANIE PODKREŚLEŃ
                 // Nick gracza będzie teraz używany bezpośrednio.
+                // Jeśli nick zawiera podkreślenia (np. Player_Name), Discord może wyświetlić go jako kursywa.
                 const playerName = p.name;
 
                 let playerStats = [];
 
-                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:' - 22:04
+                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:'
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
 
-                // Czas na serwerze (konwersja z minut na godziny - 22:03)
+                // Czas na serwerze (konwersja z sekund na minuty)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
                     const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
@@ -135,19 +139,12 @@ client.once('ready', async () => {
         process.exit(1); // Zakończ działanie bota
     }
 
-    // --- ROZWIĄZANIE PROBLEMU Z HOSTINGIEM (DODAJ TEN KOD) ---
-    // Port dla kontroli stanu przez platformę hostingową.
-    // Platformy hostingowe często udostępniają go w zmiennej środowiskowej PORT.
-    const HOSTING_PORT = process.env.PORT || 3000; // Użyj portu zdefiniowanego przez hosting, lub domyślnie 3000
-
-    // Tworzymy prosty serwer HTTP, który nasłuchuje na tym porcie.
-    // Służy to tylko do spełnienia wymagań platformy hostingowej,
-    // aby myślała, że aplikacja działa.
+    // --- ROZWIĄZANIE PROBLEMU Z HOSTINGIEM ---
+    const HOSTING_PORT = process.env.PORT || 3000;
     const hostingWebServer = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Bot Discord dziala i jest zdrowy.\n');
     });
-
     hostingWebServer.listen(HOSTING_PORT, () => {
         console.log(`Prosty serwer webowy (do kontroli hostingu) nasłuchuje na porcie ${HOSTING_PORT}`);
         console.log('Ten serwer służy wyłącznie do sprawdzania stanu przez platformę hostingową. Funkcjonalność bota Discord NIE jest od niego zależna.');
@@ -159,17 +156,28 @@ client.once('ready', async () => {
 
     if (!channel || !(channel instanceof TextChannel)) {
         console.error(`BŁĄD: Nie można znaleźć kanału o ID: ${STATUS_CHANNEL_ID} lub nie jest to kanał tekstowy.`);
-        return; // Nie można kontynuować bez poprawnego kanału
+        return;
     }
 
-    try {
+    // ***** NOWA LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
+    if (PREVIOUS_STATUS_MESSAGE_ID) {
+        try {
+            const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
+            statusMessage = fetchedMessage; // Ustaw statusMessage na pobraną wiadomość
+            console.log(`Znaleziono poprzednią wiadomość statusu o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Będę ją aktualizować.`);
+        } catch (error) {
+            // Jeśli nie udało się pobrać wiadomości (np. została usunięta lub ID jest błędne)
+            console.warn(`⚠️ Nie udało się znaleźć lub odczytać poprzedniej wiadomości o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Możliwe, że została usunięta lub ID jest błędne. Wysyłam nową wiadomość.`);
+            statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
+            console.log(`Wysłano nową wiadomość statusu o ID: ${statusMessage.id}. PROSZĘ ZAKTUALIZOWAĆ LUB DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
+        }
+    } else {
+        // Jeśli nie ma ID poprzedniej wiadomości w zmiennych środowiskowych, wysyłamy nową
         statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
-        console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}).`);
-
-    } catch (error) {
-        console.error('BŁĄD podczas próby wysłania początkowej wiadomości statusu:', error);
-        return; // Zakończ, jeśli nie można wysłać wiadomości
+        console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
+    // ***** KONIEC NOWEJ LOGIKI *****
+
 
     // Natychmiastowa pierwsza aktualizacja
     await updateServerStatusMessage();
