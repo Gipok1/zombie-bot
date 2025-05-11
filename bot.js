@@ -42,7 +42,7 @@ async function updateServerStatusMessage() {
             timeout: 5000 // Czas oczekiwania na odpowiedź serwera (5 sekund)
         });
 
-        let playerListContent = ''; // Zawartość, która znajdzie się WEWNĄTRZ bloku kodu
+        // let playerListContent = ''; // Ta zmienna nie jest już potrzebna
         // let playerListSection = ''; // Ta zmienna nie będzie już potrzebna w tej formie
 
         // Tworzymy nowy obiekt EmbedBuilder
@@ -50,72 +50,18 @@ async function updateServerStatusMessage() {
             .setTitle('Status Serwera Counter-Strike 1.6') // Tytuł embeda
             .setColor(0x0099FF) // Kolor paska po lewej stronie embeda (np. niebieski dla online)
             .setDescription( // Opis embeda zawierający podstawowe informacje o serwerze
+            .setText(0x000000)
                 `⭐ **Nazwa:** ${serverInfo.name}\n` +
                 `🗺️ **Mapa:** ${serverInfo.map}\n` +
                 `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             );
 
-        if (serverInfo.players && serverInfo.players.length > 0) {
-            const sortedPlayers = serverInfo.players.sort((a, b) => {
-                if (a.score !== undefined && b.score !== undefined) {
-                    return b.score - a.score;
-                }
-                return a.name.localeCompare(b.name);
-            });
-
-            const maxPlayersToShow = 25;
-            const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
-
-            playersToShow.forEach(p => {
-                const playerName = p.name;
-                let playerStats = [];
-
-                if (p.score !== undefined) {
-                    playerStats.push(`Fragi: ${p.score}`);
-                }
-
-                if (p.time !== undefined) {
-                    const totalSeconds = Math.floor(p.time);
-                    const totalMinutes = Math.round(totalSeconds / 60);
-                    
-                    const hours = Math.floor(totalMinutes / 60);
-                    const remainingMinutes = totalMinutes % 60;
-                    
-                    let timeString;
-                    if (hours === 0) {
-                        timeString = `${remainingMinutes}m`;
-                    } else {
-                        timeString = `${hours}h ${remainingMinutes}m`;
-                    }
-                    playerStats.push(`Czas: ${timeString}`);
-                }
-
-                if (playerStats.length > 0) {
-                    playerListContent += `• **${playerName}** (${playerStats.join(' | ')})\n`;
-                } else {
-                    playerListContent += `• **${playerName}**\n`;
-                }
-            });
-
-            if (serverInfo.players.length > maxPlayersToShow) {
-                playerListContent += `\n(+${serverInfo.players.length - maxPlayersToShow} więcej...)\n`;
-            }
-
-            // Dodajemy pole do embeda dla listy graczy
-            embed.addFields(
-                { name: 'Gracze Online:', value: `\`\`\`\n${playerListContent}\`\`\``, inline: false }
-            );
-
-        } else {
-            // Jeśli brak graczy, również dodajemy pole do embeda
-            embed.addFields(
-                { name: 'Gracze Online:', value: '```\nBrak graczy online.\n```', inline: false }
-            );
-        }
+        // USUNIĘTO CAŁĄ LOGIKĘ TWORZENIA LISTY GRACZY I DODAWANIA JEJ JAKO POLA DO EMBEDA.
+        // Jeśli chcesz ją przywrócić, możesz skopiować odpowiednią sekcję z poprzedniej wersji kodu.
 
         // Dodajemy stopkę z ostatnią aktualizacją
-        embed.setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+        embed.setFooter({ text: `Ostatnia Aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
         // Wysyłamy / edytujemy wiadomość, używając obiektu embed
         await statusMessage.edit({ embeds: [embed], content: '' }); // Upewnij się, że content jest pusty
@@ -131,7 +77,7 @@ async function updateServerStatusMessage() {
                 `🔴 **Status:** Offline lub brak odpowiedzi\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             )
-            .setFooter({ text: `***Ostatnia aktualizacja:*** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+            .setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
         await statusMessage.edit({ embeds: [errorEmbed], content: '' }); // Upewnij się, że content jest pusty
     }
@@ -178,14 +124,14 @@ client.once('ready', async () => {
             console.warn(`⚠️ Nie udało się znaleźć lub odczytać poprzedniej wiadomości o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Możliwe, że została usunięta lub ID jest błędne. Wysyłam nową wiadomość.`);
             // Wysyłamy nową wiadomość (jako embed)
             statusMessage = await channel.send({
-                embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)] // Pomarańczowy kolor dla inicjalizacji
+                embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)]
             });
             console.log(`Wysłano nową wiadomość statusu o ID: ${statusMessage.id}. PROSZĘ ZAKTUALIZOWAĆ LUB DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
         }
     } else {
         // Wysyłamy początkową wiadomość (jako embed)
         statusMessage = await channel.send({
-            embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)] // Pomarańczowy kolor dla inicjalizacji
+            embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)]
         });
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
