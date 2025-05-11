@@ -58,11 +58,14 @@ async function updateServerStatusMessage() {
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
-                // Escape'ujemy underscore'y w nickach graczy, aby nie były interpretowane jako formatowanie Markdown
-                const escapedName = p.name.replace(/_/g, '\\_');
+                // USUNIĘTO LINIĘ ODPOWIEDZIALNĄ ZA ESCAPE'OWANIE PODKREŚLEŃ
+                // Nick gracza będzie teraz używany bezpośrednio.
+                // Jeśli nick zawiera podkreślenia (np. Player_Name), Discord może wyświetlić go jako kursywa.
+                const playerName = p.name;
+
                 let playerStats = [];
 
-                // Zabójstwa (score)
+                // Zabójstwa (score) - ZMIENIONO Z 'K:' NA 'Fragi:'
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
@@ -72,17 +75,16 @@ async function updateServerStatusMessage() {
                     const totalSeconds = Math.floor(p.time);
                     const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
 
-                    // NOWA LOGIKA DLA FORMATU Hh MMm
                     const hours = Math.floor(totalMinutes / 60); // Ile pełnych godzin
                     const remainingMinutes = totalMinutes % 60;  // Ile minut pozostaje po odjęciu godzin
-                    playerStats.push(`Czas: ${hours}h ${remainingMinutes}m`); // Zmieniona linia
+                    playerStats.push(`Czas: ${hours}h ${remainingMinutes}m`);
                 }
 
                 // Łączymy statystyki
                 if (playerStats.length > 0) {
-                    playerListContent += `• ${escapedName} (${playerStats.join(' | ')})\n`;
+                    playerListContent += `• ${playerName} (${playerStats.join(' | ')})\n`; // Używamy playerName
                 } else {
-                    playerListContent += `• ${escapedName}\n`;
+                    playerListContent += `• ${playerName}\n`; // Używamy playerName
                 }
             });
 
