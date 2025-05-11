@@ -99,7 +99,7 @@ async function updateServerStatusMessage() {
                          + `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n`
                          + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
                          + `${playerListSection}\n` // Używamy nowej zmiennej zawierającej blok kodu
-                         + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}_`; // Zmieniono format czasu!
+                         + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`; // Zmieniono format czasu!
 
         await statusMessage.edit(response);
         console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie.');
@@ -111,7 +111,7 @@ async function updateServerStatusMessage() {
             `>>> **Serwer CS 1.6 Status**\n`
             + `🔴 **Status:** Offline lub brak odpowiedzi\n`
             + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\`\n`
-            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}_` // Zmieniono format czasu również tutaj!
+            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_` // Zmieniono format czasu również tutaj!
         );
     }
 }
