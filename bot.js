@@ -49,6 +49,7 @@ async function updateServerStatusMessage() {
                 // Jeśli obie mają punkty, sortuj według punktów malejąco
                 if (a.score !== undefined && b.score !== undefined) {
                     return b.score - a.score;
+                }
                 // W przeciwnym razie sortuj alfabetycznie po nazwie
                 return a.name.localeCompare(b.name);
             });
@@ -58,12 +59,16 @@ async function updateServerStatusMessage() {
 
             playersToShow.forEach(p => {
                 // Escape'ujemy underscore'y w nickach graczy, aby nie były interpretowane jako formatowanie Markdown
+                const escapedName = p.name.replace(/_/g, '\\_');
                 let playerStats = [];
 
                 // Zabójstwa (score)
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
+		// Śmierci (deaths)
+		if (p.deaths !== undefined) {
+		    playerStats.push(`Smierci: ${p.deaths}`);
                 // Czas na serwerze (konwersja z sekund na minuty)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
