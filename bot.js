@@ -66,9 +66,9 @@ async function updateServerStatusMessage() {
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
-		// Śmierci (deaths)
-		if (p.deaths !== undefined) {
-		    playerStats.push(`Smierci: ${p.deaths}`);
+		// Śmierci (death)
+		if (p.death !== undefined) {
+		    playerStats.push(`Smierci: ${p.death}`);
                 // Czas na serwerze (konwersja z sekund na minuty)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
