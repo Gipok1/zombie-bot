@@ -59,7 +59,6 @@ async function updateServerStatusMessage() {
 
             playersToShow.forEach(p => {
                 // Escape'ujemy underscore'y w nickach graczy, aby nie były interpretowane jako formatowanie Markdown
-                const escapedName = p.name.replace(/_/g, '\\_');
                 let playerStats = [];
 
                 // Zabójstwa (score)
