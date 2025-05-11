@@ -57,7 +57,7 @@ async function updateServerStatusMessage() {
                 return a.name.localeCompare(b.name);
             });
 
-            const maxPlayersToShow = 25; // Zwiększono limit wyświetlanych graczy!
+            const maxPlayersToShow = 25; // Zwiększono limit wyświetlanych graczy
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
@@ -164,7 +164,6 @@ client.once('ready', async () => {
         return;
     }
 
-    // ***** LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
     if (PREVIOUS_STATUS_MESSAGE_ID) {
         try {
             const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
@@ -179,7 +178,6 @@ client.once('ready', async () => {
         statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
-    // ***** KONIEC LOGIKI *****
 
 
     // Natychmiastowa pierwsza aktualizacja
