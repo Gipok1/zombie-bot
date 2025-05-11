@@ -1,7 +1,8 @@
 // Na początku pliku, po innych importach, dodaj moduł 'http':
 const http = require('http');
 
-const { Client, GatewayIntentBits, TextChannel } = require('discord.js');
+// DODAJ EmbedBuilder do importu z discord.js
+const { Client, GatewayIntentBits, TextChannel, EmbedBuilder } = require('discord.js');
 const Gamedig = require('gamedig');
 require('dotenv').config(); // Wczytaj zmienne środowiskowe z pliku .env
 
@@ -19,12 +20,10 @@ const PREVIOUS_STATUS_MESSAGE_ID = process.env.PREVIOUS_STATUS_MESSAGE_ID;
 let statusMessage = null;
 
 // Inicjalizacja klienta Discorda
-// Potrzebujemy intencji Guilds oraz GuildMessages, aby bot mógł wysyłać i edytować wiadomości.
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,         // Do operacji na serwerach Discorda
-        GatewayIntentBits.GuildMessages   // Do wysyłania i edytowania wiadomości
-        // GatewayIntentBits.MessageContent NIE jest potrzebne, ponieważ nie przetwarzamy komend od użytkowników.
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages
     ],
 });
 
@@ -44,57 +43,58 @@ async function updateServerStatusMessage() {
         });
 
         let playerListContent = ''; // Zawartość, która znajdzie się WEWNĄTRZ bloku kodu
-        let playerListSection = ''; // Cała sekcja z listą graczy, włącznie z nagłówkiem i blokiem kodu
+        // let playerListSection = ''; // Ta zmienna nie będzie już potrzebna w tej formie
+
+        // Tworzymy nowy obiekt EmbedBuilder
+        const embed = new EmbedBuilder()
+            .setTitle('Status Serwera Counter-Strike 1.6') // Tytuł embeda
+            .setColor(0x0099FF) // Kolor paska po lewej stronie embeda (np. niebieski dla online)
+            .setDescription( // Opis embeda zawierający podstawowe informacje o serwerze
+                `⭐ **Nazwa:** ${serverInfo.name}\n` +
+                `🗺️ **Mapa:** ${serverInfo.map}\n` +
+                `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n` +
+                `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
+            );
 
         if (serverInfo.players && serverInfo.players.length > 0) {
-            // Sortujemy graczy np. według punktacji (jeśli dostępna), a potem alfabetycznie
             const sortedPlayers = serverInfo.players.sort((a, b) => {
-                // Jeśli obie mają punkty, sortuj według punktów malejąco
                 if (a.score !== undefined && b.score !== undefined) {
                     return b.score - a.score;
                 }
-                // W przeciwnym razie sortuj alfabetycznie po nazwie
                 return a.name.localeCompare(b.name);
             });
 
-            const maxPlayersToShow = 25; // Zwiększono limit wyświetlanych graczy!
+            const maxPlayersToShow = 25;
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
-                // Nick gracza będzie teraz używany bezpośrednio.
-                // Jeśli nick zawiera podkreślenia (np. Player_Name), Discord może wyświetlić go jako kursywa.
                 const playerName = p.name;
-
                 let playerStats = [];
 
-                // Zabójstwa (score)
                 if (p.score !== undefined) {
                     playerStats.push(`Fragi: ${p.score}`);
                 }
 
-                // Czas na serwerze (konwersja z sekund na minity)
                 if (p.time !== undefined) {
                     const totalSeconds = Math.floor(p.time);
-                    const totalMinutes = Math.round(totalSeconds / 60); // Całkowita liczba minut
-
-                    const hours = Math.floor(totalMinutes / 60); // Ile pełnych godzin
-                    const remainingMinutes = totalMinutes % 60;  // Ile minut pozostaje po odjęciu godzin
+                    const totalMinutes = Math.round(totalSeconds / 60);
+                    
+                    const hours = Math.floor(totalMinutes / 60);
+                    const remainingMinutes = totalMinutes % 60;
                     
                     let timeString;
-                    // Jeśli godziny to 0, wyświetl tylko minuty
                     if (hours === 0) {
                         timeString = `${remainingMinutes}m`;
                     } else {
                         timeString = `${hours}h ${remainingMinutes}m`;
                     }
-                    playerStats.push(`Czas: ${timeString}`); // Używamy przygotowanego stringu czasu
+                    playerStats.push(`Czas: ${timeString}`);
                 }
 
-                // Łączymy statystyki
                 if (playerStats.length > 0) {
-                    playerListContent += `• **${playerName}** (${playerStats.join(' | ')})\n`; // DODANO POGRUBIENIE
+                    playerListContent += `• **${playerName}** (${playerStats.join(' | ')})\n`;
                 } else {
-                    playerListContent += `• **${playerName}**\n`; // DODANO POGRUBIENIE
+                    playerListContent += `• **${playerName}**\n`;
                 }
             });
 
@@ -102,34 +102,38 @@ async function updateServerStatusMessage() {
                 playerListContent += `\n(+${serverInfo.players.length - maxPlayersToShow} więcej...)\n`;
             }
 
-            // Konstruujemy całą sekcję z listą graczy w bloku kodu
-            playerListSection = `\n**Gracze online:**\n\`\`\`\n${playerListContent}\`\`\``;
+            // Dodajemy pole do embeda dla listy graczy
+            embed.addFields(
+                { name: 'Gracze Online:', value: `\`\`\`\n${playerListContent}\`\`\``, inline: false }
+            );
 
         } else {
-            // Jeśli brak graczy, również umieszczamy to w bloku kodu
-            playerListSection = '\n**Gracze Online:**\n```\nBrak graczy online.\n```';
+            // Jeśli brak graczy, również dodajemy pole do embeda
+            embed.addFields(
+                { name: 'Gracze Online:', value: '```\nBrak graczy online.\n```', inline: false }
+            );
         }
 
-        const response = `>>> **Serwer CS 1.6 Status**\n`
-                         + `⭐ **Nazwa:** ${serverInfo.name}\n`
-                         + `🗺️ **Mapa:** ${serverInfo.map}\n`
-                         + `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n`
-                         + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
-                         + `${playerListSection}\n`
-                         + `***Ostatnia aktualizacja:*** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}`;
+        // Dodajemy stopkę z ostatnią aktualizacją
+        embed.setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
-        await statusMessage.edit(response);
-        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie.');
+        // Wysyłamy / edytujemy wiadomość, używając obiektu embed
+        await statusMessage.edit({ embeds: [embed], content: '' }); // Upewnij się, że content jest pusty
+        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie (Embed).');
 
     } catch (error) {
         console.error('❌ Wystąpił błąd podczas pobierania informacji o serwerze CS 1.6:', error.message);
-        // Zaktualizuj wiadomość, aby pokazać, że serwer jest offline lub wystąpił błąd
-        await statusMessage.edit(
-            `>>> **Serwer CS 1.6 Status**\n`
-            + `🔴 **Status:** Offline lub brak odpowiedzi\n`
-            + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\`\n`
-            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`
-        );
+        // Tworzymy embed dla statusu offline/błędu
+        const errorEmbed = new EmbedBuilder()
+            .setTitle('Status Serwera Counter-Strike 1.6')
+            .setColor(0xFF0000) // Kolor czerwony dla statusu offline
+            .setDescription(
+                `🔴 **Status:** Offline lub brak odpowiedzi\n` +
+                `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
+            )
+            .setFooter({ text: `***Ostatnia aktualizacja:*** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+
+        await statusMessage.edit({ embeds: [errorEmbed], content: '' }); // Upewnij się, że content jest pusty
     }
 }
 
@@ -172,11 +176,17 @@ client.once('ready', async () => {
             console.log(`Znaleziono poprzednią wiadomość statusu o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Będę ją aktualizować.`);
         } catch (error) {
             console.warn(`⚠️ Nie udało się znaleźć lub odczytać poprzedniej wiadomości o ID: ${PREVIOUS_STATUS_MESSAGE_ID}. Możliwe, że została usunięta lub ID jest błędne. Wysyłam nową wiadomość.`);
-            statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
+            // Wysyłamy nową wiadomość (jako embed)
+            statusMessage = await channel.send({
+                embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)] // Pomarańczowy kolor dla inicjalizacji
+            });
             console.log(`Wysłano nową wiadomość statusu o ID: ${statusMessage.id}. PROSZĘ ZAKTUALIZOWAĆ LUB DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
         }
     } else {
-        statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
+        // Wysyłamy początkową wiadomość (jako embed)
+        statusMessage = await channel.send({
+            embeds: [new EmbedBuilder().setDescription('Inicjuję automatyczny status serwera...').setColor(0xFFA500)] // Pomarańczowy kolor dla inicjalizacji
+        });
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
     // ***** KONIEC LOGIKI *****
