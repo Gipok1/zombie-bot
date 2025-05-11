@@ -31,9 +31,16 @@ async function updateServerStatusMessage() {
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
-                // === ZMIANA TUTAJ: USUNIĘTO ESCAPE'OWANIE UNDERSCORE'ÓW ===
-                // const escapedName = p.name.replace(/_/g, '\\_'); // Ta linia jest teraz zbędna
-                const playerName = p.name; // Używamy oryginalnej nazwy gracza
+                // === ZMIANA TUTAJ: USUWANIE BACKSLASHY PRZED PODKREŚLENIAMI ===
+                // Jeśli nazwa gracza zawiera '\_' (czyli backslash i podkreślenie),
+                // zamieniamy to na samo '_'
+                const playerName = p.name.replace(/\\_/g, '_'); 
+                
+                // Opcjonalnie, jeśli problem dotyczy też innych znaków, możesz rozważyć bardziej
+                // ogólne usuwanie backslashy, ale to może być ryzykowne.
+                // Np. const playerName = p.name.replace(/\\(.)/g, '$1'); 
+                // Ale to by usunęło backslash z np. 'moj\\nick' -> 'mojnick'.
+                // Dlatego trzymamy się tylko przypadku '\_'.
 
                 let playerStats = [];
 
@@ -56,9 +63,9 @@ async function updateServerStatusMessage() {
 
                 // Łączymy statystyki
                 if (playerStats.length > 0) {
-                    playerListContent += `• ${playerName} (${playerStats.join(' | ')})\n`; // Używamy playerName
+                    playerListContent += `• ${playerName} (${playerStats.join(' | ')})\n`;
                 } else {
-                    playerListContent += `• ${playerName}\n`; // Używamy playerName, jeśli brak statystyk
+                    playerListContent += `• ${playerName}\n`;
                 }
             });
 
@@ -78,21 +85,20 @@ async function updateServerStatusMessage() {
                              + `⭐ **Nazwa:** ${serverInfo.name}\n`
                              + `🗺️ **Mapa:** ${serverInfo.map}\n`
                              + `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n`
-                             + `🔗 **Adres:** \`<span class="math-inline">\{SERVER\_IP\}\:</span>{SERVER_PORT}\``
-                             + `${playerListSection}\n` // Używamy nowej zmiennej zawierającej blok kodu
-                             + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`; // Zmieniono format czasu!
+                             + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
+                             + `${playerListSection}\n`
+                             + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`;
 
         await statusMessage.edit(response);
         console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie.');
 
     } catch (error) {
         console.error('❌ Wystąpił błąd podczas pobierania informacji o serwerze CS 1.6:', error.message);
-        // Zaktualizuj wiadomość, aby pokazać, że serwer jest offline lub wystąpił błąd
         await statusMessage.edit(
             `>>> **Serwer CS 1.6 Status**\n`
             + `🔴 **Status:** Offline lub brak odpowiedzi\n`
-            + `🔗 **Adres:** \`<span class="math-inline">\{SERVER\_IP\}\:</span>{SERVER_PORT}\`\n`
-            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_` // Zmieniono format czasu również tutaj!
+            + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\`\n`
+            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`
         );
     }
 }
