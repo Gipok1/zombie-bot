@@ -42,20 +42,20 @@ async function updateServerStatusMessage() {
             timeout: 5000 // Czas oczekiwania na odpowiedź serwera (5 sekund)
         });
 
-        let playerListContent = ''; // Ponownie potrzebujemy tej zmiennej
+        let playerListContent = '';
 
         // Tworzymy nowy obiekt EmbedBuilder
         const embed = new EmbedBuilder()
-            .setTitle('Status Serwera Counter-Strike 1.6') // Tytuł embeda
-            .setColor(0x0099FF) // PRZYWRÓCONO KOLOR NIEBIESKI DLA STATUSU ONLINE!
-            .setDescription( // Opis embeda zawierający podstawowe informacje o serwerze
+            .setTitle('Status Serwera Counter-Strike 1.6')
+            .setColor(0x0099FF) // Kolor niebieski dla statusu online
+            .setDescription(
                 `⭐ **Nazwa:** ${serverInfo.name}\n` +
                 `🗺️ **Mapa:** ${serverInfo.map}\n` +
                 `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
             );
 
-        // >>> LOGIKA TWORZENIA LISTY GRACZY I DODAWANIA JEJ JAKO POLA DO EMBEDA BEZ BLOKU KODU (GRANATOWEGO TŁA) <<<
+        // LOGIKA TWORZENIA LISTY GRACZY
         if (serverInfo.players && serverInfo.players.length > 0) {
             const sortedPlayers = serverInfo.players.sort((a, b) => {
                 if (a.score !== undefined && b.score !== undefined) {
@@ -91,11 +91,11 @@ async function updateServerStatusMessage() {
                     playerStats.push(`Czas: ${timeString}`);
                 }
 
-                // TUTAJ ZMIENIAMY FORMATOWANIE NICKÓW I STATYSTYK
+                // Formatowanie: Nick bez pogrubienia, statystyki w nawiasie pogrubione
                 if (playerStats.length > 0) {
-                    playerListContent += `• ${playerName} **(${playerStats.join(' | ')})**\n`; // Nick bez pogrubienia, statystyki w nawiasie pogrubione
+                    playerListContent += `• ${playerName} **(${playerStats.join(' | ')})**\n`;
                 } else {
-                    playerListContent += `• ${playerName}\n`; // Nick bez pogrubienia
+                    playerListContent += `• ${playerName}\n`;
                 }
             });
 
@@ -103,32 +103,31 @@ async function updateServerStatusMessage() {
                 playerListContent += `\n(+${serverInfo.players.length - maxPlayersToShow} więcej...)\n`;
             }
 
-            // Dodajemy pole do embeda dla listy graczy, BEZ BLOKU KODU (GRANATOWEGO TŁA)
+            // Dodajemy pole dla listy graczy, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze Online:**', value: playerListContent, inline: false }
+                { name: '**Gracze online:**', value: playerListContent, inline: false } // <<< ZMIANA: Nagłówek pola pogrubiony
             );
 
         } else {
-            // Jeśli brak graczy, również dodajemy pole do embeda BEZ BLOKU KODU (GRANATOWEGO TŁA)
+            // Jeśli brak graczy, również dodajemy pole, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze Online:**', value: 'Brak graczy online.', inline: false }
+                { name: '**Gracze online:**', value: 'Brak graczy online.', inline: false } // <<< ZMIANA: Nagłówek pola pogrubiony
             );
         }
-        // >>> KONIEC LOGIKI DLA LISTY GRACZY <<<
 
-        // Dodajemy stopkę z ostatnią aktualizacją
-        embed.setFooter({ text: `**Ostatnia aktualizacja:** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
+        // Dodajemy stopkę z ostatnią aktualizacją (bez zmian w formatowaniu - powinna być już normalna)
+        embed.setFooter({ text: `Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}` });
 
         // Wysyłamy / edytujemy wiadomość, używając obiektu embed
         await statusMessage.edit({ embeds: [embed], content: '' });
-        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie (Embed, z niebieskim paskiem, gracze bez bloku kodu).');
+        console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie.');
 
     } catch (error) {
         console.error('❌ Wystąpił błąd podczas pobierania informacji o serwerze CS 1.6:', error.message);
         // Tworzymy embed dla statusu offline/błędu
         const errorEmbed = new EmbedBuilder()
             .setTitle('Status Serwera Counter-Strike 1.6')
-            .setColor(0xFF0000) // Kolor czerwony dla statusu offline (POZOSTAWIENIE)
+            .setColor(0xFF0000) // Kolor czerwony dla statusu offline
             .setDescription(
                 `🔴 **Status:** Offline lub brak odpowiedzi\n` +
                 `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
