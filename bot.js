@@ -57,7 +57,7 @@ async function updateServerStatusMessage() {
                 return a.name.localeCompare(b.name);
             });
 
-            const maxPlayersToShow = 25; // Zwiększono limit wyświetlanych graczy
+            const maxPlayersToShow = 25; // Zwiększono limit wyświetlanych graczy!
             const playersToShow = sortedPlayers.slice(0, maxPlayersToShow);
 
             playersToShow.forEach(p => {
@@ -81,7 +81,7 @@ async function updateServerStatusMessage() {
                     const remainingMinutes = totalMinutes % 60;  // Ile minut pozostaje po odjęciu godzin
                     
                     let timeString;
-                    // NOWA LOGIKA: Jeśli godziny to 0, wyświetl tylko minuty
+                    // Jeśli godziny to 0, wyświetl tylko minuty
                     if (hours === 0) {
                         timeString = `${remainingMinutes}m`;
                     } else {
@@ -92,9 +92,9 @@ async function updateServerStatusMessage() {
 
                 // Łączymy statystyki
                 if (playerStats.length > 0) {
-                    playerListContent += `• ${playerName} (${playerStats.join(' | ')})\n`; // Używamy playerName
+                    playerListContent += `• **${playerName}** (${playerStats.join(' | ')})\n`; // DODANO POGRUBIENIE
                 } else {
-                    playerListContent += `• ${playerName}\n`; // Używamy playerName
+                    playerListContent += `• **${playerName}**\n`; // DODANO POGRUBIENIE
                 }
             });
 
@@ -103,11 +103,11 @@ async function updateServerStatusMessage() {
             }
 
             // Konstruujemy całą sekcję z listą graczy w bloku kodu
-            playerListSection = `\n**Gracze Online:**\n\`\`\`\n${playerListContent}\`\`\``;
+            playerListSection = `\n**Gracze online:**\n\`\`\`\n${playerListContent}\`\`\``;
 
         } else {
             // Jeśli brak graczy, również umieszczamy to w bloku kodu
-            playerListSection = '\n**Gracze online:**\n```\nBrak graczy online.\n```';
+            playerListSection = '\n**Gracze Online:**\n```\nBrak graczy online.\n```';
         }
 
         const response = `>>> **Serwer CS 1.6 Status**\n`
@@ -115,8 +115,8 @@ async function updateServerStatusMessage() {
                          + `🗺️ **Mapa:** ${serverInfo.map}\n`
                          + `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n`
                          + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\``
-                         + `${playerListSection}\n` // Używamy nowej zmiennej zawierającej blok kodu
-                         + `***Ostatnia aktualizacja:*** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}`; // Zmieniono format czasu!
+                         + `${playerListSection}\n`
+                         + `***Ostatnia aktualizacja:*** ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}`;
 
         await statusMessage.edit(response);
         console.log('✅ Status serwera w wiadomości zaktualizowany pomyślnie.');
@@ -128,7 +128,7 @@ async function updateServerStatusMessage() {
             `>>> **Serwer CS 1.6 Status**\n`
             + `🔴 **Status:** Offline lub brak odpowiedzi\n`
             + `🔗 **Adres:** \`${SERVER_IP}:${SERVER_PORT}\`\n`
-            + `**_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_***` // Zmieniono format czasu również tutaj!
+            + `_Ostatnia aktualizacja: ${new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Europe/Warsaw' })}_`
         );
     }
 }
@@ -164,6 +164,7 @@ client.once('ready', async () => {
         return;
     }
 
+    // ***** LOGIKA: Szukanie i aktualizowanie istniejącej wiadomości *****
     if (PREVIOUS_STATUS_MESSAGE_ID) {
         try {
             const fetchedMessage = await channel.messages.fetch(PREVIOUS_STATUS_MESSAGE_ID);
@@ -178,6 +179,7 @@ client.once('ready', async () => {
         statusMessage = await channel.send('Inicjuję automatyczny status serwera...');
         console.log(`Wysłano początkową wiadomość statusu w kanale ${channel.name} (ID: ${statusMessage.id}). ABY ZAPOBIEGAĆ WYSYŁANIU NOWYCH WIADOMOŚCI PO RESTARCIE, PROSZĘ DODAĆ ZMIENNĄ PREVIOUS_STATUS_MESSAGE_ID W PLIKU .env I USTAWIĆ JĄ NA: ${statusMessage.id}`);
     }
+    // ***** KONIEC LOGIKI *****
 
 
     // Natychmiastowa pierwsza aktualizacja
