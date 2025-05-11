@@ -126,13 +126,13 @@ async function updateServerStatusMessage() {
 
             // Dodajemy pole dla listy graczy, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze online:**', value: playerListContent, inline: false }
+                { name: '**Gracze Online:**', value: playerListContent, inline: false }
             );
 
         } else {
             // Jeśli brak graczy, również dodajemy pole, nagłówek "Gracze online:" pogrubiony
             embed.addFields(
-                { name: '**Gracze online:**', value: 'Brak graczy online.', inline: false }
+                { name: '**Gracze Online:**', value: 'Brak graczy online.', inline: false }
             );
         }
 
