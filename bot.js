@@ -1,3 +1,15 @@
+  playersToShow.forEach(p => {
+                console.log(`DIAGNOSTYKA: Oryginalna nazwa gracza z Gamedig: "${p.name}" (Typ: ${typeof p.name}, Długość: ${p.name.length})`);
+                for (let i = 0; i < p.name.length; i++) {
+                    console.log(`  Znak ${i}: '${p.name[i]}' (Kod ASCII/Unicode: ${p.name.charCodeAt(i)})`);
+                }
+                // ------------------------------------------
+
+                // Jeśli nazwa gracza zawiera '\_' (czyli backslash i podkreślenie),
+                // zamieniamy to na samo '_'
+                const playerName = p.name.replace(/\\_/g, '_'); 
+                
+                let playerStats = [];
 // Funkcja do pobierania informacji o serwerze i aktualizacji wiadomości statusu
 async function updateServerStatusMessage() {
     if (!statusMessage) {
