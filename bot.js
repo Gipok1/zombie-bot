@@ -52,7 +52,7 @@ async function updateServerStatusMessage() {
                 `⭐ **Nazwa:** ${serverInfo.name}\n` +
                 `🗺️ **Mapa:** ${serverInfo.map}\n` +
                 `👥 **Gracze:** ${serverInfo.players.length}/${serverInfo.maxplayers}\n` +
-                `🔗 **Adres:** \**${SERVER_IP}:**${SERVER_PORT}\`
+                `🔗 **IP:** \${SERVER_IP}:${SERVER_PORT}\`
             );
 
         // LOGIKA TWORZENIA LISTY GRACZY
